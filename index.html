@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAGE - Agendamento Biblioteca | EMEF VILMA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <div class="header-title">
+            <h1>SAGE - BIBLIOTECA (EMEF VILMA)</h1>
+            <p>Painel Avançado de Ocupação da Biblioteca</p>
+        </div>
+        
+        <div class="week-controls">
+            <button class="btn-nav" onclick="changeWeek(-1)">◀ Voltar</button>
+            <span class="current-week-label" id="current-week-label">Carregando...</span>
+            <button class="btn-nav" onclick="changeWeek(1)">Avançar ▶</button>
+        </div>
+    </header>
+
+    <div class="legend-grid">
+        <div class="legend-item">
+            <span class="legend-badge" style="background-color: var(--bg-free); color: var(--text-free); border-color: var(--border-free);">Disponível</span>
+            <span>Horário livre para reserva</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-badge" style="background-color: var(--bg-occupied); color: var(--text-occupied); border-color: var(--border-occupied);">Reservado</span>
+            <span>Ocupado por um docente</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-badge" style="background-color: var(--bg-interval); color: var(--text-interval);">Intervalo</span>
+            <span>Horário bloqueado</span>
+        </div>
+    </div>
+
+    <div class="desktop-view">
+        <table>
+            <thead>
+                <tr id="desktop-header">
+                    <th>Horário</th>
+                    <th>Segunda</th>
+                    <th>Terça</th>
+                    <th>Quarta</th>
+                    <th>Quinta</th>
+                    <th>Sexta</th>
+                </tr>
+            </thead>
+            <tbody id="desktop-body"></tbody>
+        </table>
+    </div>
+
+    <div class="mobile-view">
+        <div class="carousel-hint">↔ Arraste para o lado para ver outros dias</div>
+        <div class="mobile-carousel-container" id="mobile-body"></div>
+    </div>
+    
+    <div class="sync-indicator" id="sync-status"><span class="sync-dot"></span> Sincronizado em tempo real</div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+        <h3 id="modal-title">Agendar</h3>
+        <p id="modal-datetime"></p>
+        
+        <div id="form-container">
+            <div class="form-group">
+                <label for="prof-name-input">Nome do Professor *</label>
+                <input type="text" id="prof-name-input" placeholder="Ex: Profª Ana">
+            </div>
+            <div class="form-group">
+                <label for="series-input">Série / Turma *</label>
+                <input type="text" id="series-input" placeholder="Ex: 5º Ano B">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-save" onclick="saveBooking()">Agendar Horário</button>
+            </div>
+        </div>
+
+        <div id="view-container" style="display: none;">
+            <div style="margin-bottom: 16px;">
+                <strong style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Docente</strong>
+                <p id="view-prof" style="font-size: 16px; font-weight: 700; margin-top: 4px; color: var(--text-main);"></p>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <strong style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Turma / Ano</strong>
+                <p id="view-series" style="font-size: 14px; font-weight: 600; margin-top: 4px; color: var(--text-main);"></p>
+            </div>
+            <button class="btn btn-delete" onclick="deleteBooking()">Desistir do Agendamento</button>
+            <button class="btn btn-cancel" style="width: 100%; margin-top: 8px;" onclick="closeModal()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
