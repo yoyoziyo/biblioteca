@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// 2. Suas configurações oficiais do Firebase (Mantidas idênticas)
+// 2. Suas configurações oficiais do Firebase (Mantidas iguais para usar o mesmo projeto)
 const firebaseConfig = {
   apiKey: "AIzaSyAddhKyVCMmTwQ7Y_BKt4t7DyGKilJTsf4",
   authDomain: "emef-informatica.firebaseapp.com",
@@ -33,6 +33,10 @@ let currentWeekOffset = 0;
 let bookings = {};
 let currentSlotKey = null;
 let currentWeekKey = "";
+let isFirstLoad = true; 
+
+// Rota específica do banco da biblioteca (Cria uma pasta isolada)
+const PATH_BANCO = 'bookings_biblioteca'; 
 
 function getWeekDates(offset) {
     const today = new Date();
@@ -61,14 +65,39 @@ function getWeekId(dates) {
     return `${start}_${end}`;
 }
 
-// OUVINTE EM TEMPO REAL DA BIBLIOTECA (Rota isolada no Firebase)
-const bookingsRef = ref(db, 'bookings_biblioteca');
+// OUVINTE EM TEMPO REAL
+const bookingsRef = ref(db, PATH_BANCO);
 onValue(bookingsRef, (snapshot) => {
     bookings = snapshot.val() || {};
     renderView();
+    
+    // Rola automaticamente para o dia atual se for a primeira abertura da página
+    if (isFirstLoad) {
+        scrollToCurrentDay();
+        isFirstLoad = false;
+    }
 });
 
-// Tornando as funções acessíveis globalmente
+function scrollToCurrentDay() {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); 
+    
+    if (currentWeekOffset === 0 && dayOfWeek >= 1 && dayOfWeek <= 5) {
+        setTimeout(() => {
+            const container = document.getElementById("mobile-body");
+            if (container) {
+                const cards = container.getElementsByClassName("mobile-day-card");
+                const targetIndex = dayOfWeek - 1;
+                
+                if (cards && cards[targetIndex]) {
+                    const cardWidth = cards[targetIndex].offsetWidth;
+                    container.scrollLeft = (cardWidth + 16) * targetIndex; 
+                }
+            }
+        }, 300);
+    }
+}
+
 window.changeWeek = function(direction) {
     currentWeekOffset += direction;
     renderView();
@@ -87,14 +116,14 @@ window.saveBooking = function() {
         return;
     }
 
-    set(ref(db, `bookings_biblioteca/${currentWeekKey}/${currentSlotKey}`), { prof, series })
+    set(ref(db, `${PATH_BANCO}/${currentWeekKey}/${currentSlotKey}`), { prof, series })
     .then(() => window.closeModal())
     .catch((error) => alert("Erro ao salvar: " + error.message));
 };
 
 window.deleteBooking = function() {
     if (confirm("Deseja mesmo cancelar esta reserva e liberar a sala?")) {
-        set(ref(db, `bookings_biblioteca/${currentWeekKey}/${currentSlotKey}`), null)
+        set(ref(db, `${PATH_BANCO}/${currentWeekKey}/${currentSlotKey}`), null)
         .then(() => window.closeModal());
     }
 };
@@ -213,3 +242,13 @@ function renderView() {
         mobileBody.appendChild(card);
     });
 }
+
+// Inicia sistema
+window.onload = function() {
+    setInterval(() => {
+        onValue(ref(db, PATH_BANCO), (snapshot) => {
+            bookings = snapshot.val() || {};
+            renderView();
+        }, { onlyOnce: true });
+    }, 10000);
+};
